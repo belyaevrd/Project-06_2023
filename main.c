@@ -122,7 +122,7 @@ void testintegral (unsigned N) {
 
 int main (char argc, char** argv) {
     double x, y; 
-    double eps1 = 0.00000000001, eps2 = 0.000001;
+    double eps1 = 0.000001, eps2 = 0.000001;
     char a = 0, it = 0;
     for (int i = 0; i < argc; ++i) {
         if (!strcmp(argv[i],"-a")) {

@@ -3,9 +3,6 @@ global f1
 global f2
 global f3
 global d
-;global df1
-;global df2
-;global df3
 
 f1:
     push ebp
@@ -149,7 +146,7 @@ df3:
     leave
     ret
 
-d: ; d(double* x, void* f, double value)
+d: ; void d(double* x, void* f, double value);
     push ebp
     mov ebp, esp
     sub esp, 8
