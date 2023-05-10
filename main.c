@@ -1,73 +1,67 @@
 #include <stdio.h>
 #include <string.h>
 #include <stdlib.h>
-#include <float.h>
+#include <math.h>
 #include "func.h"
 
-double root (void (*f)(double*, double), void (*g)(double*, double), double a, double b, double eps1, const char param1, const char param2) {
+double root (double (*f)(double), double (*g)(double), double a, double b, double eps1, const char param1, const char param2) {
     double x, y, y1, y2, xn, xnn;
     unsigned n = 1;
     if (eps1/1024 > 0) eps1 /= 1024;
-    d(&x, f, a);
-    d(&y, g, a);
-    y1 = x-y;
-    d(&x, f, b);
-    d(&y, g, b);
-    y2 = x-y;
+    y1 = d(f, a) - d(g, a);
+    y2 = d(f, b) - d(g, b);
     if ((y1-y2 <= 0.0 && y1 > 0.0 && y2 > 0.0) || (y1-y2 >= 0.0 && y1 < 0.0 && y2 < 0.0)) { // F' > 0 и не убывает или F' < 0 и не возрастает
         xnn = a;
-        f (&x, b);
-        g (&y, b);
-        y2 = x-y;
+        y2 = f(b)-g(b);
         do {
-        xn = xnn;
-        f(&x, xn);
-        g(&y, xn);
-        y1 = x-y;
-        xnn = xn - (b-xn)*y1/(y2-y1);
-        f (&x, xnn);
-        g (&y, xnn);
-        ++n;
-        } while ((xnn-xn-eps1 > 0) || (xn-xnn-eps1 > 0) || (x-y-y1-eps1 > 0) || (y1-x+y-eps1 > 0));
+            xn = xnn;
+            y1 = f(xn) - g(xn);
+            xnn = xn - (b-xn)*y1/(y2-y1);
+            x = f (xnn);
+            y = g (xnn);
+            ++n;
+        } while ((fabs(xnn-xn)-eps1 > 0) || (fabs(x-y-y1)-eps1 > 0));
     }
     else { // F' < 0 и не убывает или F' > 0 и не возрастает
         xnn = b;
-        f (&x, a);
-        g (&y, a);
-        y1 = x-y;
+        y1 = f(a)-g(a);
          do {
-        xn = xnn;
-        f(&x, xn);
-        g(&y, xn);
-        y2 = x-y;
-        xnn = xn - (xn-a)*y2/(y2-y1);
-        f (&x, xnn);
-        g (&y, xnn);
-        ++n;
-        } while ((xnn-xn-eps1 > 0) || (xn-xnn-eps1 > 0) || (x-y-y2-eps1 > 0) || (y2-x+y-eps1 > 0));
+            xn = xnn;
+            y2 = f(xn)-g(xn);
+            xnn = xn - (xn-a)*y2/(y2-y1);
+            x = f (xnn);
+            y = g (xnn);
+            ++n;
+        } while ((fabs(xnn-xn)-eps1 > 0) || (fabs(x-y-y2)-eps1 > 0));
     }
     if (param1) printf ("number of iterations: %u\n", n);
     if (param2) printf ("intersection point: %lf\n", xnn);
     return xnn;
  }
 
-double integral (void (*f)(double*, double), double a, double b, double eps2, char param) {
-    double I, S = 0, r, x;
-    if (eps2/1024 > 0) eps2 /= 1024;
-    int n = 1;
-    do {
-        I = S;
-        r = (b-a)/n/2;
-        S = 0;
-        for (int i = 1; i <= 2*n-1; i += 2) {
-            x = a + r*i;
-            f (&x, x);
-            S += x;
-        }
-        S = S*(b-a)/n;
-        n *= 2;
-        if (n < 0) break;
-    } while (S-I-eps2 > 0 || I-S-eps2 > 0);
+double integral (double (*f)(double), double a, double b, double eps2, char param) {
+    double S = 0, r, x;
+    int n;
+    if (f == f1) {
+        n = sqrt((b-a)*(b-a)*(b-a)/24/eps2*f(b));
+        ++n;
+    }
+    else if (f == f2) {
+        n = 2;
+    }
+    else {
+        double x = fabs(10.0/(a*a*a)), y = fabs(10.0/(b*b*b));
+        x = x-y > 0 ? x : y;
+        x = x > 0 ? x : 1.0;
+        n = sqrt((b-a)*(b-a)*(b-a)/24/eps2*x);
+        ++n;
+    }
+    r = (b-a)/n/2;
+    S = 0;
+    for (int i = 1; i <= 2*n-1; i += 2) {
+       S += f(a+r*i);
+    }
+    S = S*(b-a)/n;
     if (param) printf ("Integral of function: %lf\n", S);
     return S;
 }
@@ -90,9 +84,9 @@ void testroot (unsigned N) {
             m ^= n;
             n ^= m;
         }
-        if (n == 1 && m == 2) root (f1, f2, a, b, eps, 1, 1);
-        else if(n == 1 && m == 3) root (f1, f3, a, b, eps, 1, 1);
-        else if(n == 2 && m == 3) root (f2, f3, a, b, eps, 1, 1);  
+        if      (n == 1 && m == 2) root (f1, f2, a, b, eps, 1, 1);
+        else if (n == 1 && m == 3) root (f1, f3, a, b, eps, 1, 1);
+        else if (n == 2 && m == 3) root (f2, f3, a, b, eps, 1, 1);  
         else {
             printf ("ERROR: m and n should be in the range from 1 to 3\n");
             i--;
@@ -109,9 +103,9 @@ void testintegral (unsigned N) {
         unsigned n, m;
         double a, b, eps;
         scanf ("%u%lf%lf%lf", &n, &a, &b, &eps);
-        if (n == 1) integral (f1, a, b, eps, 1);
-        else if(n == 2) integral (f2, a, b, eps, 1);
-        else if(n == 3) integral (f3, a, b, eps, 1);  
+        if      (n == 1) integral (f1, a, b, eps, 1);
+        else if (n == 2) integral (f2, a, b, eps, 1);
+        else if (n == 3) integral (f3, a, b, eps, 1);  
         else {
             printf ("ERROR: n should be in the range from 1 to 3\n");
             i--;
@@ -134,14 +128,14 @@ int main (char argc, char** argv) {
         if (!strcmp(argv[i],"-help")) {
             printf ("OPTIONS:\n-a  : output of all abscissa values of intersection points for all pairs of functions\n\
 -it : output of the numbers of iterations to find the roots of the equations\n\
--test-root NUM : testing of the function root; NUM is number of the tests\n\
--test-integral NUM : testing of the function integral; NUM is number of the tests\n");
+--test-root NUM : testing of the function root; NUM is number of the tests\n\
+--test-integral NUM : testing of the function integral; NUM is number of the tests\n");
         }
-        if (!strcmp(argv[i],"-test-root")) {
+        if (!strcmp(argv[i],"--test-root")) {
             int N = atoi(argv[i+1]); 
             testroot (N);
         }
-        if (!strcmp(argv[i],"-test-integral")) {
+        if (!strcmp(argv[i],"--test-integral")) {
             int N = atoi(argv[i+1]); 
             testintegral (N);
         }

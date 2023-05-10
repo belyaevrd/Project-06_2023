@@ -7,10 +7,9 @@ global d
 f1:
     push ebp
     mov ebp, esp
-    mov eax, dword[ebp+8]
-   
     mov ecx, 1
-    fld qword[ebp+12]
+    finit
+    fld qword[ebp+8]
     fldz
     fcomip
     jbe .Lf11
@@ -43,17 +42,15 @@ f1:
     fld1
     faddp
     faddp
-    fstp qword[eax]
     leave
     ret
 
 df1:
     push ebp
-    mov ebp, esp
-    mov eax, dword[ebp+8]
-   
+    mov ebp, esp 
     mov ecx, 1
-    fld qword[ebp+12]
+    finit
+    fld qword[ebp+8]
     fldz
     fcomip
     jbe .Ldf11
@@ -82,15 +79,14 @@ df1:
     fld1
     fdivr
 .Ldf12:
-    fstp qword[eax]
     leave
     ret
 
 f2:
     push ebp
     mov ebp, esp
-    mov eax, dword[ebp+8]
-    fld qword[ebp+12]
+    finit
+    fld qword[ebp+8]
     sub esp, 4
     mov dword[esp], 2
     fild dword[esp]
@@ -99,64 +95,56 @@ f2:
     mov dword[esp], 8
     fild dword[esp]
     faddp
-    fstp qword[eax]
-    add esp, 4
     leave
     ret
 
 df2:
     push ebp
     mov ebp, esp
-    mov eax, dword[ebp+8]
+    finit
     fld1
     fld1
     faddp
     fchs
-    fstp qword[eax]
     leave
     ret
 
 f3:
     push ebp
     mov ebp, esp
-    mov eax, dword[ebp+8]
     sub esp, 4
     mov dword[esp], -5
+    finit
     fild dword[esp]
-    fld qword[ebp+12]
+    fld qword[ebp+8]
     fdivp
-    fstp qword[eax]
-    add esp, 4
     leave
     ret
 
 df3:
     push ebp
     mov ebp, esp
-    mov eax, dword[ebp+8]
     sub esp, 4
     mov dword[esp], 5
+    finit
     fild dword[esp]
-    fld qword[ebp+12]
-    fld qword[ebp+12]
+    fld qword[ebp+8]
+    fld qword[ebp+8]
     fmulp
     fdivp
-    fstp qword[eax]
-    add esp, 4
     leave
     ret
 
-d: ; void d(double* x, void* f, double value);
+d: ; (double (*f), double value)
     push ebp
     mov ebp, esp
     sub esp, 8
-    mov eax, dword[ebp+16]
+    mov eax, dword[ebp+12]
     mov [esp], eax
-    mov eax, dword[ebp+20]
+    mov eax, dword[ebp+16]
     mov [esp+4], eax
-    push dword[ebp+8]
 
-    mov eax, [ebp+12]
+    mov eax, [ebp+8]
     cmp eax, f1
     jne .Ld1
     call df1
@@ -169,6 +157,5 @@ d: ; void d(double* x, void* f, double value);
 .Ld2:
     call df3
 .Ld:
-    add esp, 12
     leave
     ret
