@@ -7,7 +7,6 @@
 double root (double (*f)(double), double (*g)(double), double a, double b, double eps1, const char param1, const char param2) {
     double x, y, y1, y2, xn, xnn;
     unsigned n = 1;
-    //if (eps1/1024 > 0) eps1 /= 1024;
     y1 = d(f, a) - d(g, a);
     y2 = d(f, b) - d(g, b);
     if ((y1-y2 <= 0.0 && y1 > 0.0 && y2 > 0.0) || (y1-y2 >= 0.0 && y1 < 0.0 && y2 < 0.0)) { // F' > 0 и не убывает или F' < 0 и не возрастает
