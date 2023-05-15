@@ -135,7 +135,7 @@ df3:
     leave
     ret
 
-d: ; (double (*f), double value)
+d:
     push ebp
     mov ebp, esp
     sub esp, 8
